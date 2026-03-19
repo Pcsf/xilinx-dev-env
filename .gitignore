@@ -1,0 +1,23 @@
+# Vivado generated files
+.Xil/
+*.jou
+*.log
+*.str
+*.backup.jou
+*.backup.log
+
+# Vivado project build artifacts
+**/lab*/.gen/
+**/lab*/.srcs/
+**/lab*.cache/
+**/lab*.hw/
+**/lab*.ip_user_files/
+**/lab*.sim/
+**/lab*.runs/
+
+# Large binaries
+*.tar.gz
+*.bin
+
+# License files
+Xilinx.lic
