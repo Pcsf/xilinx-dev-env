@@ -20,8 +20,11 @@ xhost +local:docker > /dev/null
 PROJECT_DIR=$(pwd)
 HOST_TOOLS_DIR="$HOME/dev/fpga/xilinx_tools"
 
+TTY_FLAG=()
+[ -t 0 ] && TTY_FLAG=(-t)
+
 DOCKER_COMMON=(
-    docker run -it --rm
+    docker run -i "${TTY_FLAG[@]}" --rm
     --net=host
     --ipc=host
     --privileged
