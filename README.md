@@ -75,6 +75,23 @@ docker pull xilinx/vitis-ai-pytorch-cpu:latest
 ./vivado_docker.sh -mode batch -source /path/to/script.tcl
 ```
 
+### Launch container in CLI/bash mode
+
+Drops into an interactive bash shell with the Vivado environment sourced.
+Useful for running TCL scripts, batch flows, or debugging without opening the GUI.
+
+```bash
+./vivado_docker.sh --cli
+# or
+./vivado_docker.sh -c
+```
+
+From the shell you can run any Xilinx CLI tool directly, e.g.:
+
+```bash
+vivado -mode batch -source my_script.tcl
+```
+
 ### Launch Vitis AI
 
 ```bash
