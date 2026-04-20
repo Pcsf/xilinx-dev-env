@@ -19,6 +19,7 @@ RUN dpkg --add-architecture i386 && \
     python3 python3-pip \
     locales \
     sudo \
+    faketime libfaketime \
     && locale-gen en_US.UTF-8
 
 # 2. Set up the environment variables

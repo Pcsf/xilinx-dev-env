@@ -1,11 +1,18 @@
 #!/bin/bash
 
+# Fixed wall-clock date used when --frozen-time is requested.
+# Change this string to move the locked date.
+FROZEN_DATE="2026-04-20 00:00:00"
+FAKETIME_LIB="/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1"
+
 # Parse flags
 CLI_MODE=0
+FROZEN_TIME=0
 PASSTHROUGH_ARGS=()
 for arg in "$@"; do
     case "$arg" in
         --cli|-c) CLI_MODE=1 ;;
+        --frozen-time|-f) FROZEN_TIME=1 ;;
         *) PASSTHROUGH_ARGS+=("$arg") ;;
     esac
 done
@@ -23,6 +30,16 @@ HOST_TOOLS_DIR="$HOME/dev/fpga/xilinx_tools"
 TTY_FLAG=()
 [ -t 0 ] && TTY_FLAG=(-t)
 
+FREEZE_ENV=()
+if [ "$FROZEN_TIME" -eq 1 ]; then
+    FREEZE_ENV=(
+        -e LD_PRELOAD="$FAKETIME_LIB"
+        -e FAKETIME="@$FROZEN_DATE"
+        -e FAKETIME_DONT_FAKE_MONOTONIC=1
+        -e FAKETIME_NO_CACHE=1
+    )
+fi
+
 DOCKER_COMMON=(
     docker run -i "${TTY_FLAG[@]}" --rm
     --net=host
@@ -35,6 +52,7 @@ DOCKER_COMMON=(
     -e LIBGL_ALWAYS_SOFTWARE=1
     -e GALLIUM_DRIVER=softpipe
     -e MESA_GL_VERSION_OVERRIDE=4.5
+    "${FREEZE_ENV[@]}"
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw
     -v /dev/dri:/dev/dri
     -v "$HOME/.Xauthority:/home/fpgauser/.Xauthority:rw"
@@ -51,6 +69,7 @@ if [ "$CLI_MODE" -eq 1 ]; then
     echo "Starting Vivado Container (CLI/bash mode)..."
     echo "  Project: $PROJECT_DIR"
     echo "  Tools  : $HOST_TOOLS_DIR -> /tools/Xilinx"
+    [ "$FROZEN_TIME" -eq 1 ] && echo "  Clock  : frozen at $FROZEN_DATE"
     "${DOCKER_COMMON[@]}" /bin/bash -c "$SETTINGS && exec bash"
 else
     echo "Starting Vivado Container (GUI mode)..."
@@ -58,5 +77,6 @@ else
     echo "  Project: $PROJECT_DIR"
     echo "  Tools  : $HOST_TOOLS_DIR -> /tools/Xilinx"
     echo "  Vivado Args: ${PASSTHROUGH_ARGS[*]:-[none]}"
+    [ "$FROZEN_TIME" -eq 1 ] && echo "  Clock  : frozen at $FROZEN_DATE"
     "${DOCKER_COMMON[@]}" /bin/bash -c "$SETTINGS && vivado \"\$@\"" -- "${PASSTHROUGH_ARGS[@]}"
 fi
