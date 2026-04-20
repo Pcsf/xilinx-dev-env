@@ -92,6 +92,28 @@ From the shell you can run any Xilinx CLI tool directly, e.g.:
 vivado -mode batch -source my_script.tcl
 ```
 
+### Frozen clock (reproducible builds)
+
+Pass `--frozen-time` (or `-f`) to run Vivado with a fixed wall-clock date
+via `libfaketime`. This is useful for reproducible bitstreams, since the
+timestamp baked into `.bit` files and synthesis logs becomes deterministic.
+
+```bash
+./vivado_docker.sh --frozen-time                       # GUI
+./vivado_docker.sh -c -f                               # CLI shell
+./vivado_docker.sh -f -mode batch -source build.tcl    # batch
+```
+
+The locked date is defined by `FROZEN_DATE` at the top of
+`vivado_docker.sh` (default: `2026-04-20 00:00:00`). Only the wall clock
+is frozen — monotonic timers are left untouched (`FAKETIME_DONT_FAKE_MONOTONIC=1`),
+so Vivado's internal progress counters still work.
+
+Verified with a full `synth_design` pass on `xc7z020clg484-1`: license
+manager accepts the frozen date and synthesis completes normally. If you
+use a paid-tier part, make sure your license is still valid on the frozen
+date.
+
 ### Launch Vitis AI
 
 ```bash
